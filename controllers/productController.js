@@ -6,6 +6,18 @@ const path = require('path');
 
 //create product controller
 const createProduct = async (req, res) => {
+  const { price, atSale, salePrice } = req.body;
+
+  // checking if atSale is true
+  if (atSale && (!salePrice)) {
+    throw new CustomError.BadRequestError('please provide a sale price');
+  }
+
+  // making sure that salePrice is less than the original price
+  if (atSale && (salePrice >= price)) {
+    throw new CustomError.BadRequestError('please provide a sale price that is lower than the original price');
+  }
+
   req.body.user = req.user.userId;
   const product = await Product.create(req.body);
 
@@ -38,6 +50,7 @@ const getSingleProduct = async (req, res) => {
 //update product controller
 const updateProduct = async (req, res) => {
   const { id: productId } = req.params;
+
   const product = await Product.findOneAndUpdate({ _id: productId }, req.body, {
     new: true,
     runValidators: true,
