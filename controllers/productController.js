@@ -15,7 +15,7 @@ const createProduct = async (req, res) => {
 
 //get all products controller
 const getAllProducts = async (req, res) => {
-  const products = await Product.find({}).populate({path:'reviews'});
+  const products = await Product.find({});
 
   res.status(StatusCodes.OK).json({ products, count: products.length });
 };
@@ -24,7 +24,8 @@ const getAllProducts = async (req, res) => {
 //get single product controller
 const getSingleProduct = async (req, res) => {
   const { id: productId } = req.params;
-  const product = await Product.findOne({ _id: productId });
+  const product = await Product.findOne({ _id: productId }).populate({ path: 'reviews' });
+
   //checks if the product exists
   if (!product) {
     throw new CustomError.NotFoundError(`there is no product with id: ${productId}`);
@@ -41,6 +42,7 @@ const updateProduct = async (req, res) => {
     new: true,
     runValidators: true,
   });
+
   //checks if the product exists
   if (!product) {
     throw new CustomError.NotFoundError(`there is no product with id: ${productId}`);
@@ -52,39 +54,40 @@ const updateProduct = async (req, res) => {
 
 // delete product controller
 const deleteProduct = async (req, res) => {
- const { id:productId } = req.params
- const product = await Product.findOne({_id:productId})
- //checks if the product exists
- if (!product) {
+  const { id: productId } = req.params
+  const product = await Product.findOne({ _id: productId })
+
+  //checks if the product exists
+  if (!product) {
     throw new CustomError.NotFoundError(`there is no product with id: ${productId}`);
   }
 
   product.remove();
-  res.status(StatusCodes.OK).json({msg:'product has been deleted'})
+  res.status(StatusCodes.OK).json({ msg: 'product has been deleted' })
 
 };
 
 
 //upload image controller
 const uploadImage = async (req, res) => {
- if(!req.files){
+  if (!req.files) {
     throw new CustomError.BadRequestError("no file uploaded")
- }
- 
- const productImage = req.files.image; 
- if(!productImage.mimetype.startsWith('image')){
+  }
+
+  const productImage = req.files.image;
+  if (!productImage.mimetype.startsWith('image')) {
     throw new CustomError.BadRequestError('please upload an Image')
- }
+  }
 
- const maxSize = 1024 * 1024;
- if(productImage.size > maxSize){
+  const maxSize = 1024 * 1024;
+  if (productImage.size > maxSize) {
     throw new CustomError.BadRequestError('please upload an Image smaller than 1MB')
- }
+  }
 
- const imagePath = path.join(__dirname,'../public/uploads/' + `${productImage.name}`)
- await productImage.mv(imagePath);
+  const imagePath = path.join(__dirname, '../public/uploads/' + `${productImage.name}`)
+  await productImage.mv(imagePath);
 
- res.status(StatusCodes.OK).json({ image: `/uploads/${productImage.name}` })
+  res.status(StatusCodes.OK).json({ image: `/uploads/${productImage.name}` })
 };
 
 module.exports = {
