@@ -65,10 +65,10 @@ const login = async (req, res) => {
 // user logout controller
 const logout = async (req, res) => {
   res.cookie('token', '', {
-    httpOnly: true,       // Ensure it's only accessible via HTTP (not JavaScript)
-    expires: new Date(0), // Set expiration date to the past to remove it
-    secure: true,         // If using HTTPS
-    sameSite: 'none',   // Prevent CSRF attacks
+    httpOnly: true,
+    expires: new Date(0),
+    secure: true,
+    sameSite: 'none',
   });
   res.status(200).json({ message: 'Successfully logged out' });
 };

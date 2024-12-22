@@ -22,16 +22,21 @@ const ProductSchema = new mongoose.Schema(
       type: String,
       default: "/uploads/example.jpeg",
     },
+    gender: {
+      type: String,
+      required: [true, "please provide gender"],
+      enum: ["men", "women", "kids"]
+    },
     category: {
       type: String,
       required: [true, "Please provide product category"],
-      enum: ["office", "kitchen", "bedroom"],
+      enum: ["shirts", "shoes", "pants", "hoodies and sweatshirts", "jackets", "accessories"],
     },
     company: {
       type: String,
       required: [true, "Please provide company"],
       enum: {
-        values: ["ikea", "liddy", "marcos"],
+        values: ["adidas", "puma", "nike", "american eagle", "h&m", "pull & bear", "zara", "bershka", "new balance"],
         message: "{VALUE} is not supported",
       },
     },
