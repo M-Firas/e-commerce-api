@@ -32,6 +32,11 @@ const ProductSchema = new mongoose.Schema(
       required: [true, "Please provide product category"],
       enum: ["shirts", "shoes", "pants", "hoodies and sweatshirts", "jackets", "accessories"],
     },
+    season: {
+      type: String,
+      enum: ["default", "summer", "winter", "fall", "spring"],
+      default: "default"
+    },
     company: {
       type: String,
       required: [true, "Please provide company"],
