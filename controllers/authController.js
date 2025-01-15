@@ -23,7 +23,7 @@ const register = async (req, res) => {
   const user = new User({ email, name, lastName, password, role, verificationToken });
 
   //sending the verfication email
-  const origin = "http://localhost:3000"
+  const origin = "http://localhost:5173"
   await sendVerificationEmail({ name: user.name, email: user.email, verificationToken: user.verificationToken, origin })
 
   // Setting the confirmPassword virtual field
