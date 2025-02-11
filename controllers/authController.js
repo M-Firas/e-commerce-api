@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Token = require("../models/Token");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const { cookiesToResponse, createTokenUser, sendVerificationEmail } = require('../utils')
@@ -94,19 +95,58 @@ const login = async (req, res) => {
 
   //signing in the user
   const tokenUser = createTokenUser(user);
-  cookiesToResponse({ res, user: tokenUser })
 
-  res.status(StatusCodes.OK).json({ user: tokenUser });
+  //creating refresh token
+  let refreshToken = '';
+
+  //checking for existing token
+  const existingToken = await Token.findOne({ user: user._id });
+
+  if (existingToken) {
+    const { isValid } = existingToken
+    if (!isValid) {
+      throw new CustomError.UnauthenticatedError('Invalid Credentials')
+    }
+    refreshToken = existingToken.refreshToken
+    cookiesToResponse({ res, user: tokenUser, refreshToken })
+    res.status(StatusCodes.OK).json({ user: tokenUser });
+    return;
+  }
+
+
+
+  refreshToken = crypto.randomBytes(40).toString('hex')
+  const userAgent = req.headers['user-agent']
+  const ip = req.ip
+  const userToken = { refreshToken, userAgent, ip, user: user._id }
+
+  await Token.create(userToken)
+
+
+  cookiesToResponse({ res, user: tokenUser, refreshToken })
+
+  res.status(StatusCodes.OK).json({ user: tokenUser, refreshToken });
 };
 
 // user logout controller
 const logout = async (req, res) => {
-  res.cookie('token', '', {
+
+  await Token.findOneAndDelete({ user: req.user.userId })
+
+  res.cookie('accessToken', '', {
     httpOnly: true,
     expires: new Date(0),
     secure: true,
     sameSite: 'none',
   });
+
+  res.cookie('refreshToken', '', {
+    httpOnly: true,
+    expires: new Date(0),
+    secure: true,
+    sameSite: 'none',
+  });
+
   res.status(200).json({ message: 'Successfully logged out' });
 };
 
